@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:11
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: sagar@30
+      MYSQL_DATABASE: video_analytics
+      MYSQL_USER: sagar
+      MYSQL_PASSWORD: sagar@30
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  app:
+    image: video-ads-backend:latest
+    container_name: video-ads-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3011:3011"
+      - "9090:9090"
+    depends_on:
+      - db
+      - redis
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: sagar
+      DB_PASS: sagar@30
+      DB_NAME: video_analytics
+      REDIS_PORT: redis:6379
+      SERVER_PORT: 3011
+      METRICS_PORT: 9090
+    networks:
+      - app-network
+
+volumes:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge
